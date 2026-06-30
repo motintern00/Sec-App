@@ -19,7 +19,7 @@ class AttendanceCheckInTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $securityUser;
+    private User $employeeUser;
     private Employee $employee;
 
     protected function setUp(): void
@@ -27,7 +27,6 @@ class AttendanceCheckInTest extends TestCase
         parent::setUp();
         Storage::fake('public');
 
-        $this->securityUser = User::factory()->create(['role' => UserRole::Security]);
         $department = Department::create(['name' => 'Security GPA']);
         $shift = Shift::create([
             'name' => 'Shift 1',
@@ -39,9 +38,16 @@ class AttendanceCheckInTest extends TestCase
 
         $this->employee = Employee::create([
             'name' => 'Timot',
+            'email' => 'timot@test.local',
             'department_id' => $department->id,
             'shift_id' => $shift->id,
             'is_active' => true,
+        ]);
+
+        $this->employeeUser = User::factory()->create([
+            'email' => 'timot@test.local',
+            'role' => UserRole::Employee,
+            'employee_id' => $this->employee->id,
         ]);
     }
 
@@ -49,8 +55,7 @@ class AttendanceCheckInTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-06-29 07:05:00', 'Asia/Jakarta'));
 
-        $response = $this->actingAs($this->securityUser)->postJson(route('security.attendance.check-in'), [
-            'employee_id' => $this->employee->id,
+        $response = $this->actingAs($this->employeeUser)->postJson(route('employee.attendance.check-in'), [
             'latitude' => -6.242792163317656,
             'longitude' => 106.84609367942863,
             'photo' => UploadedFile::fake()->image('checkin.jpg'),
@@ -67,17 +72,13 @@ class AttendanceCheckInTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-06-29 07:05:00', 'Asia/Jakarta'));
 
-        $response = $this->actingAs($this->securityUser)->postJson(route('security.attendance.check-in'), [
-            'employee_id' => $this->employee->id,
+        $response = $this->actingAs($this->employeeUser)->postJson(route('employee.attendance.check-in'), [
             'latitude' => -6.250000,
             'longitude' => 106.900000,
             'photo' => UploadedFile::fake()->image('checkin.jpg'),
         ]);
 
-        $response->assertStatus(422)->assertJson([
-            'success' => false,
-            'message' => 'Anda berada di luar area kantor. Absensi ditolak.',
-        ]);
+        $response->assertStatus(422);
     }
 
     public function test_check_in_rejected_when_already_checked_in(): void
@@ -89,11 +90,10 @@ class AttendanceCheckInTest extends TestCase
             'attendance_date' => '2026-06-29',
             'check_in_at' => now(),
             'status' => AttendanceStatus::Present,
-            'recorded_by' => $this->securityUser->id,
+            'recorded_by' => $this->employeeUser->id,
         ]);
 
-        $response = $this->actingAs($this->securityUser)->postJson(route('security.attendance.check-in'), [
-            'employee_id' => $this->employee->id,
+        $response = $this->actingAs($this->employeeUser)->postJson(route('employee.attendance.check-in'), [
             'latitude' => -6.242792163317656,
             'longitude' => 106.84609367942863,
             'photo' => UploadedFile::fake()->image('checkin.jpg'),

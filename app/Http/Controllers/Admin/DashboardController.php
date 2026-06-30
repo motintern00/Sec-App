@@ -18,7 +18,16 @@ class DashboardController extends Controller
     {
         $stats = $this->dashboardService->getStats();
         $todayAttendances = $this->attendanceService->getTodayForDashboard();
+        $chart7Days = $this->dashboardService->getChartData(7);
+        $chart30Days = $this->dashboardService->getChartData(30);
+        $absentEmployees = $this->dashboardService->getAbsentEmployeesToday();
 
-        return view('admin.dashboard', compact('stats', 'todayAttendances'));
+        return view('admin.dashboard', compact(
+            'stats',
+            'todayAttendances',
+            'chart7Days',
+            'chart30Days',
+            'absentEmployees'
+        ));
     }
 }

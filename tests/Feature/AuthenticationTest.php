@@ -11,7 +11,7 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_redirects_to_admin_dashboard(): void
+    public function test_admin_redirects_to_dashboard(): void
     {
         $admin = User::factory()->create([
             'email' => 'admin@test.local',
@@ -26,15 +26,15 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('dashboard'));
     }
 
-    public function test_security_redirects_to_attendance_page(): void
+    public function test_employee_redirects_to_dashboard(): void
     {
-        $security = User::factory()->create([
-            'email' => 'security@test.local',
-            'role' => UserRole::Security,
+        $employee = User::factory()->create([
+            'email' => 'employee@test.local',
+            'role' => UserRole::Employee,
         ]);
 
         $response = $this->post('/login', [
-            'email' => $security->email,
+            'email' => $employee->email,
             'password' => 'password',
         ]);
 

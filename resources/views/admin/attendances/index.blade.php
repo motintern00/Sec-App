@@ -3,11 +3,18 @@
 @section('title', 'Data Absensi')
 @section('page-title', 'Data Absensi')
 
+@section('breadcrumb')
+    @include('components.breadcrumb', ['items' => [
+        ['label' => 'Dashboard', 'url' => route('admin.dashboard')],
+        ['label' => 'Data Absensi'],
+    ]])
+@endsection
+
 @section('content')
     <div class="gpa-card mb-4">
         <div class="gpa-card-header">Filter Data</div>
         <div class="gpa-card-body">
-            <form method="GET" action="{{ route('admin.attendances.index') }}" class="row g-3">
+            <form method="GET" action="{{ route('admin.attendances.index') }}" class="row g-3" id="filter-form">
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Mulai</label>
                     <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
@@ -29,9 +36,11 @@
                     <label class="form-label">Cari Nama</label>
                     <input type="text" name="name" class="form-control" placeholder="Ketik nama..." value="{{ request('name') }}">
                 </div>
-                <div class="col-12">
+                <div class="col-12 d-flex flex-wrap gap-2">
                     <button type="submit" class="btn btn-gpa-primary"><i class="bi bi-search me-1"></i> Filter</button>
                     <a href="{{ route('admin.attendances.index') }}" class="btn btn-outline-secondary">Reset</a>
+                    <a href="{{ route('admin.attendances.export.csv', request()->query()) }}" class="btn btn-outline-success"><i class="bi bi-filetype-csv me-1"></i> CSV</a>
+                    <a href="{{ route('admin.attendances.export.xlsx', request()->query()) }}" class="btn btn-success"><i class="bi bi-file-earmark-spreadsheet me-1"></i> Excel</a>
                 </div>
             </form>
         </div>
@@ -69,7 +78,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">Tidak ada data absensi.</td>
+                                <td colspan="6">
+                                    @include('components.empty-state', [
+                                        'icon' => 'bi-calendar-x',
+                                        'title' => 'Tidak ada data absensi',
+                                        'message' => 'Coba ubah filter atau tunggu data absensi masuk.',
+                                    ])
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>

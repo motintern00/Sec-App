@@ -7,11 +7,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role'])]
+#[Fillable(['name', 'email', 'password', 'role', 'employee_id', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,6 +28,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
     public function recordedAttendances(): HasMany
     {
         return $this->hasMany(Attendance::class, 'recorded_by');
@@ -37,8 +43,8 @@ class User extends Authenticatable
         return $this->role === UserRole::Admin;
     }
 
-    public function isSecurity(): bool
+    public function isEmployee(): bool
     {
-        return $this->role === UserRole::Security;
+        return $this->role === UserRole::Employee;
     }
 }

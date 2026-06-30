@@ -47,6 +47,8 @@ class AttendanceController extends Controller
                 (float) $request->validated('latitude'),
                 (float) $request->validated('longitude'),
                 $request->file('photo'),
+                null,
+                $request,
             );
 
             return response()->json([
@@ -76,6 +78,8 @@ class AttendanceController extends Controller
                 (float) $request->validated('latitude'),
                 (float) $request->validated('longitude'),
                 $request->file('photo'),
+                null,
+                $request,
             );
 
             return response()->json([

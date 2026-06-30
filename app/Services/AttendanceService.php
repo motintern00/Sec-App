@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,7 @@ class AttendanceService
     public function __construct(
         private GeolocationService $geolocationService,
         private ShiftService $shiftService,
+        private ActivityLogService $activityLogService,
     ) {}
 
     public function checkIn(
@@ -26,7 +28,8 @@ class AttendanceService
         float $latitude,
         float $longitude,
         UploadedFile $photo,
-        ?Carbon $now = null
+        ?Carbon $now = null,
+        ?Request $request = null
     ): Attendance {
         $now = $now ?? now();
 
@@ -47,7 +50,7 @@ class AttendanceService
         $status = $this->shiftService->determineCheckInStatus($employee, $now);
         $photoPath = $this->storePhoto($photo);
 
-        return DB::transaction(function () use ($employee, $recorder, $latitude, $longitude, $photoPath, $attendanceDate, $status, $now) {
+        return DB::transaction(function () use ($employee, $recorder, $latitude, $longitude, $photoPath, $attendanceDate, $status, $now, $request) {
             $attendance = Attendance::query()->firstOrNew([
                 'employee_id' => $employee->id,
                 'attendance_date' => $attendanceDate,
@@ -67,6 +70,19 @@ class AttendanceService
             ]);
             $attendance->save();
 
+            $this->activityLogService->log(
+                $recorder,
+                'check_in',
+                $employee,
+                $attendance,
+                $request,
+                [
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'status' => $status->value,
+                ]
+            );
+
             return $attendance->fresh(['employee.department', 'employee.shift']);
         });
     }
@@ -77,7 +93,8 @@ class AttendanceService
         float $latitude,
         float $longitude,
         UploadedFile $photo,
-        ?Carbon $now = null
+        ?Carbon $now = null,
+        ?Request $request = null
     ): Attendance {
         $now = $now ?? now();
 
@@ -110,6 +127,18 @@ class AttendanceService
             'check_out_longitude' => $longitude,
             'recorded_by' => $recorder->id,
         ]);
+
+        $this->activityLogService->log(
+            $recorder,
+            'check_out',
+            $employee,
+            $attendance,
+            $request,
+            [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+            ]
+        );
 
         return $attendance->fresh(['employee.department', 'employee.shift']);
     }

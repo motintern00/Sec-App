@@ -3,6 +3,18 @@
 @section('title', 'Absensi')
 @section('page-title', 'Halaman Absensi')
 
+@section('breadcrumb')
+    @include('components.breadcrumb', ['items' => [
+        ['label' => 'Absensi', 'url' => route('security.attendance.index')],
+        ['label' => 'Check-in / Check-out'],
+    ]])
+@endsection
+
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+@endpush
+
 @section('content')
     <div class="row g-4">
         <div class="col-lg-5">
@@ -12,7 +24,7 @@
                     <div class="mb-3">
                         <label for="employee_id" class="form-label fw-medium">Nama Pegawai</label>
                         <select id="employee_id" class="form-select">
-                            <option value="">Pilih Nama Pegawai</option>
+                            <option value="">Pilih atau ketik nama pegawai...</option>
                             @foreach($employees as $employee)
                                 <option value="{{ $employee->id }}">{{ $employee->name }}</option>
                             @endforeach
@@ -42,11 +54,16 @@
         </div>
         <div class="col-lg-7">
             <div class="gpa-card">
-                <div class="gpa-card-header">Kamera</div>
+                <div class="gpa-card-header d-flex justify-content-between align-items-center">
+                    <span>Kamera</span>
+                    <button type="button" id="btn_switch_camera" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-camera-reverse me-1"></i> Ganti Kamera
+                    </button>
+                </div>
                 <div class="gpa-card-body text-center">
                     <video id="camera_preview" class="gpa-camera-preview" autoplay playsinline muted></video>
                     <canvas id="photo_canvas" class="d-none"></canvas>
-                    <p class="text-muted small mt-2">Kamera aktif otomatis saat halaman dibuka.</p>
+                    <p class="text-muted small mt-2">Kamera aktif otomatis. Foto akan ditampilkan untuk konfirmasi sebelum absen.</p>
                 </div>
             </div>
         </div>
@@ -54,5 +71,7 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('assets/js/attendance.js') }}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="{{ asset('assets/js/attendance.js') }}"></script>
 @endpush

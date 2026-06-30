@@ -36,10 +36,10 @@ class EmployeeCrudTest extends TestCase
         $this->assertDatabaseHas('employees', ['name' => 'Timot']);
     }
 
-    public function test_security_cannot_access_employee_crud(): void
+    public function test_employee_cannot_access_employee_crud(): void
     {
-        $security = User::factory()->create(['role' => UserRole::Security]);
+        $employee = User::factory()->create(['role' => UserRole::Employee]);
 
-        $this->actingAs($security)->get(route('admin.employees.index'))->assertForbidden();
+        $this->actingAs($employee)->get(route('admin.employees.index'))->assertForbidden();
     }
 }

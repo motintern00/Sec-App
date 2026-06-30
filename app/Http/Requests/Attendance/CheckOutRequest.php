@@ -8,13 +8,12 @@ class CheckOutRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isSecurity() ?? false;
+        return $this->user()?->isEmployee() ?? false;
     }
 
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'exists:employees,id'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'photo' => ['required', 'image', 'max:5120'],
@@ -24,7 +23,6 @@ class CheckOutRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'employee_id' => 'pegawai',
             'latitude' => 'latitude',
             'longitude' => 'longitude',
             'photo' => 'foto',
